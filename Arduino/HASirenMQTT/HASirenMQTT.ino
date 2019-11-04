@@ -512,6 +512,30 @@ void handleNotFound()
   server.send(404, "text/plain", message);
 }
 
+void processREST(uint8_t index, bool state)
+{
+  index--;
+  if (index >= MAX_DEVICES)
+      return;
+
+  if (state)
+  {
+    SIREN[index].state = true;
+    shouldUpdateLights = true;
+    sendMQTTStatusMsg();
+    webSocket.broadcastTXT(statusMsg().c_str());
+    //writeEEPROM();
+  }
+  else
+  {
+    SIREN[index].state = false;
+    shouldUpdateLights = true;
+    sendMQTTStatusMsg();
+    webSocket.broadcastTXT(statusMsg().c_str());
+    //writeEEPROM();
+  }
+}
+
 // /****************************  SETUP  ****************************************/
 
 void setup()
@@ -639,6 +663,14 @@ void setup()
     server.send_P(200, PSTR("text/html"), index_htm_gz, index_htm_gz_len);
   });
   server.on("/status", HTTP_GET, [&] {
+    server.send(200, "application/json", statusMsg());
+  });
+  server.on("/on", HTTP_GET, [&] {
+    processREST(1, true);
+    server.send(200, "application/json", statusMsg());
+  });
+  server.on("/off", HTTP_GET, [&] {
+    processREST(1, false);
     server.send(200, "application/json", statusMsg());
   });
   server.on("/version", HTTP_GET, [&] {

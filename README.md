@@ -7,7 +7,8 @@ Home Assistant Switch for 120dB Siren on GPIO5
 - Code can compile on ESP8266/32
 - Uses WiFiManager to get WiFi/MQTT info from users
 - Gets auto-discovered by Home Assistant as a MQTT switch
-- Web-Server to control alarm
+- Web-Server/WebSockets to control alarm
+- REST-API to control alarm
 - 120dB Siren is connected to D1/GPIO5
 - GPIO0/FLASH_BUTTON acts as "test"
 
