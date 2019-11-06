@@ -22,7 +22,7 @@
 #include <Bounce2.h>              //https://github.com/thomasfredericks/Bounce2
 #include <MQTT.h>                 //https://github.com/256dpi/arduino-mqtt
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager/archive/development.zip
-#include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson/releases/download/v6.8.0-beta/ArduinoJson-v6.8.0-beta.zip
+#include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 #include <WebSocketsServer.h>     //https://github.com/Links2004/arduinoWebSockets
 #ifdef ESP8266
 #include <DDUpdateUploadServer.h> //https://github.com/debsahu/DDUpdateUploadServer
@@ -78,6 +78,7 @@ char light_topic_out[100] = "";
 
 char mqtt_client_name[100] = HOSTNAME;
 
+bool mqttOverRide = false;
 bool shouldSaveConfig = false;
 bool shouldUpdateLights = false;
 bool shouldReboot = false;
@@ -278,6 +279,7 @@ void processJson(String &payload)
     {
       SIREN[index].state = true;
       shouldUpdateLights = true;
+      mqttOverRide = true;
       sendMQTTStatusMsg();
       webSocket.broadcastTXT(statusMsg().c_str());
       //writeEEPROM();
@@ -286,6 +288,7 @@ void processJson(String &payload)
     {
       SIREN[index].state = false;
       shouldUpdateLights = true;
+      mqttOverRide = false;
       sendMQTTStatusMsg();
       webSocket.broadcastTXT(statusMsg().c_str());
       //writeEEPROM();
@@ -741,9 +744,9 @@ void loop()
   }
 
   debouncer.update();
-  if (debouncer.fell())
+  if (debouncer.fell() && !mqttOverRide)
     setAllOn();
-  if (debouncer.rose())
+  if (debouncer.rose() && !mqttOverRide)
     setAllOff();
 
   if (shouldUpdateLights)
